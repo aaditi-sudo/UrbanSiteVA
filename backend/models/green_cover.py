@@ -19,22 +19,21 @@ class GreenCover(db.Model):
         nullable=False
     )
 
-    tree_count = db.Column(
-        db.Integer,
-        nullable=False
-    )
-
     vegetation_area = db.Column(
         db.Float,
         nullable=False
     )
 
+    mean_ndvi = db.Column(
+        db.Float,
+        nullable=True
+    )
 
     def to_dict(self):
         return {
             "id": self.id,
             "site_id": self.site_id,
             "green_percentage": self.green_percentage,
-            "tree_count": self.tree_count,
-            "vegetation_area": self.vegetation_area
+            "vegetation_area": self.vegetation_area,
+            "mean_ndvi": self.mean_ndvi
         }
