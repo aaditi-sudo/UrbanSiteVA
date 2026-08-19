@@ -17,7 +17,6 @@ def get_green_cover():
     ])
 
 
-
 @green_cover_bp.route("/api/green-cover", methods=["POST"])
 def add_green_cover():
 
@@ -26,8 +25,8 @@ def add_green_cover():
     green_cover = GreenCover(
         site_id=data["site_id"],
         green_percentage=data["green_percentage"],
-        tree_count=data["tree_count"],
-        vegetation_area=data["vegetation_area"]
+        vegetation_area=data["vegetation_area"],
+        mean_ndvi=data.get("mean_ndvi")
     )
 
     db.session.add(green_cover)
