@@ -44,7 +44,7 @@ geometry = ee.Geometry(
 
 
 # -----------------------------
-# Load Landsat 8/9 imagery
+# Load Landsat 8 imagery
 # -----------------------------
 
 print("Loading Landsat thermal imagery...")

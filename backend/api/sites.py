@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 from flask import Blueprint, jsonify, request
 from database import db
 from models.site import Site
@@ -156,3 +159,158 @@ def simulate(site_id):
         "predicted_rating": result["predicted_rating"],
         "predicted_uhi": result["predicted_uhi"]
     })
+
+@sites_bp.route(
+    "/api/sites/<int:site_id>/process-data",
+    methods=["POST"]
+)
+def process_site_data(site_id):
+
+    # Check that the site exists
+    site = Site.query.get_or_404(site_id)
+
+    # Project root:
+    # backend/api/sites.py
+    #       ↓
+    # backend
+    #       ↓
+    # project root
+    project_root = Path(__file__).resolve().parents[2]
+
+    processed_dir = (
+        project_root
+        / "data"
+        / "processed"
+    )
+
+    # -----------------------------
+    # Load processed JSON files
+    # -----------------------------
+
+    with open(
+        processed_dir / "ndvi_summary.json",
+        "r",
+        encoding="utf-8"
+    ) as file:
+        ndvi_data = json.load(file)
+
+    with open(
+        processed_dir / "heat_summary.json",
+        "r",
+        encoding="utf-8"
+    ) as file:
+        heat_data = json.load(file)
+
+    with open(
+        processed_dir / "uhi_summary.json",
+        "r",
+        encoding="utf-8"
+    ) as file:
+        uhi_data = json.load(file)
+
+    with open(
+        processed_dir / "humidity_summary.json",
+        "r",
+        encoding="utf-8"
+    ) as file:
+        humidity_data = json.load(file)
+
+    with open(
+        processed_dir / "carbon_summary.json",
+        "r",
+        encoding="utf-8"
+    ) as file:
+        carbon_data = json.load(file)
+
+    # -----------------------------
+    # Remove old data for this site
+    # -----------------------------
+
+    ClimateData.query.filter_by(
+        site_id=site_id
+    ).delete()
+
+    GreenCover.query.filter_by(
+        site_id=site_id
+    ).delete()
+
+    CarbonData.query.filter_by(
+        site_id=site_id
+    ).delete()
+
+    # -----------------------------
+    # Create GreenCover record
+    # -----------------------------
+
+    green_cover = GreenCover(
+        site_id=site_id,
+        green_percentage=ndvi_data[
+            "green_percentage"
+        ],
+        vegetation_area=ndvi_data[
+            "vegetation_area_sq_m"
+        ],
+        mean_ndvi=ndvi_data[
+            "mean_ndvi"
+        ]
+    )
+
+    # -----------------------------
+    # Create ClimateData record
+    # -----------------------------
+
+    climate = ClimateData(
+        site_id=site_id,
+        temperature=heat_data[
+            "mean_surface_temperature_celsius"
+        ],
+        uhi_index=uhi_data[
+            "suhi_intensity_celsius"
+        ],
+        humidity=humidity_data[
+            "mean_relative_humidity_percent"
+        ]
+    )
+
+    # -----------------------------
+    # Create CarbonData record
+    # -----------------------------
+
+    carbon = CarbonData(
+        site_id=site_id,
+        carbon_intensity=carbon_data[
+            "carbon_intensity"
+        ],
+        emission_source=carbon_data[
+            "emission_source"
+        ]
+    )
+
+    # -----------------------------
+    # Save to database
+    # -----------------------------
+
+    db.session.add(
+        green_cover
+    )
+
+    db.session.add(
+        climate
+    )
+
+    db.session.add(
+        carbon
+    )
+
+    db.session.commit()
+
+    return jsonify({
+        "message": (
+            "Processed data successfully "
+            "connected to site."
+        ),
+        "site": site.to_dict(),
+        "green_cover": green_cover.to_dict(),
+        "climate": climate.to_dict(),
+        "carbon": carbon.to_dict()
+    }), 201
