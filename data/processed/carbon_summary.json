@@ -1,0 +1,11 @@
+{
+    "carbon_intensity": 74.23,
+    "emission_source": "Transportation",
+    "total_annual_emissions_kg_co2e": 742262.0,
+    "carbon_density_kg_co2e_per_m2_per_year": 74.23,
+    "emission_breakdown_kg_co2e_per_year": {
+        "transportation": 544050.0,
+        "building_energy": 181750.0,
+        "other_sources": 16462.0
+    }
+}
