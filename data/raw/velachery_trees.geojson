@@ -1,0 +1,24 @@
+{
+"type": "FeatureCollection",
+"name": "velachery_trees",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "element": "node", "id": 10559091697, "natural": "tree", "leaf_type": null }, "geometry": { "type": "Point", "coordinates": [ 80.2178065, 12.9938329 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 10559091698, "natural": "tree", "leaf_type": null }, "geometry": { "type": "Point", "coordinates": [ 80.2177739, 12.9938373 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 10559091699, "natural": "tree", "leaf_type": null }, "geometry": { "type": "Point", "coordinates": [ 80.2180222, 12.9935009 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 10559091700, "natural": "tree", "leaf_type": null }, "geometry": { "type": "Point", "coordinates": [ 80.2180664, 12.993442 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 10559091701, "natural": "tree", "leaf_type": null }, "geometry": { "type": "Point", "coordinates": [ 80.2181016, 12.9933998 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 10559091702, "natural": "tree", "leaf_type": null }, "geometry": { "type": "Point", "coordinates": [ 80.2182089, 12.99326 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 10559091703, "natural": "tree", "leaf_type": null }, "geometry": { "type": "Point", "coordinates": [ 80.2183567, 12.9930503 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 10559091704, "natural": "tree", "leaf_type": null }, "geometry": { "type": "Point", "coordinates": [ 80.2183892, 12.9930002 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 10559091705, "natural": "tree", "leaf_type": null }, "geometry": { "type": "Point", "coordinates": [ 80.2185392, 12.9927761 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 13914281284, "natural": "tree", "leaf_type": "broadleaved" }, "geometry": { "type": "Point", "coordinates": [ 80.2244174, 12.9861741 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 13914482315, "natural": "tree", "leaf_type": "broadleaved" }, "geometry": { "type": "Point", "coordinates": [ 80.22439, 12.9861229 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 13914489871, "natural": "tree", "leaf_type": "broadleaved" }, "geometry": { "type": "Point", "coordinates": [ 80.2243828, 12.9858087 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 13914503412, "natural": "tree", "leaf_type": "broadleaved" }, "geometry": { "type": "Point", "coordinates": [ 80.2243283, 12.9858994 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 13914505139, "natural": "tree", "leaf_type": null }, "geometry": { "type": "Point", "coordinates": [ 80.2240106, 12.9852889 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 13914518019, "natural": "tree", "leaf_type": "broadleaved" }, "geometry": { "type": "Point", "coordinates": [ 80.2242875, 12.9856914 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 13914527264, "natural": "tree", "leaf_type": null }, "geometry": { "type": "Point", "coordinates": [ 80.2240288, 12.9852829 ] } },
+{ "type": "Feature", "properties": { "element": "node", "id": 13914540996, "natural": "tree", "leaf_type": "broadleaved" }, "geometry": { "type": "Point", "coordinates": [ 80.2240727, 12.9853383 ] } }
+]
+}

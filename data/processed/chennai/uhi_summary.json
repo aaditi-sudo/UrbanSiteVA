@@ -1,0 +1,14 @@
+{
+    "area_name": "Chennai",
+    "period": {
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+    },
+    "metric": "surface_urban_heat_contrast",
+    "overall_mean_surface_temperature_celsius": 36.50475794392254,
+    "built_up_mean_surface_temperature_celsius": 37.12185302127728,
+    "non_built_up_mean_surface_temperature_celsius": 34.5221348009041,
+    "urban_heat_contrast_celsius": 2.599718220373184,
+    "built_probability_threshold": 0.5,
+    "landsat_scale_meters": 30
+}

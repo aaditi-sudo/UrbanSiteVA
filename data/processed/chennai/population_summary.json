@@ -1,0 +1,9 @@
+{
+    "area_name": "Chennai",
+    "data_source": "WorldPop",
+    "data_year": 2024,
+    "resolution": "100m",
+    "total_population": 1048782.25,
+    "area_km2": 334.37,
+    "population_density_per_km2": 3136.55
+}

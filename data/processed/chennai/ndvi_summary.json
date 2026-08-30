@@ -1,0 +1,12 @@
+{
+    "area_name": "Chennai",
+    "period": {
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+    },
+    "mean_ndvi": 0.2965630101782029,
+    "ndvi_vegetation_threshold": 0.3,
+    "total_area_sq_m": 334373627.33524084,
+    "vegetation_area_sq_m": 142912913.6442673,
+    "green_percentage": 42.74048607935928
+}

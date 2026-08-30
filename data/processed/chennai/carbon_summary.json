@@ -1,0 +1,18 @@
+{
+    "area_name": "Chennai",
+    "data_source": "Tamil Nadu Green Climate Company (TNGCC) and Council on Energy, Environment and Water (CEEW)",
+    "data_year": 2019,
+    "metric": "statewide_ghg_emissions_benchmark",
+    "carbon_intensity": 24.3,
+    "emission_source": "Energy",
+    "total_annual_emissions_kg_co2e": 184000000.0,
+    "total_annual_emissions_mtco2e": 184.0,
+    "per_capita_emissions_tco2e_per_year": 2.43,
+    "normalization": {
+        "method": "Per-capita GHG emissions normalized to a 0-100 impact score",
+        "high_impact_benchmark_tco2e_per_person_per_year": 10.0
+    },
+    "emission_breakdown_kg_co2e_per_year": {
+        "energy": 184000000.0
+    }
+}
