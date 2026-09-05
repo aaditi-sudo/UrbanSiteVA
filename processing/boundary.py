@@ -1,15 +1,19 @@
 import osmnx as ox
+from pathlib import Path
 
-place = "Velachery, Chennai, Tamil Nadu, India"
+PLACE = "Tamil Nadu, India"
 
-print(f"Searching OpenStreetMap for: {place}")
+print(f"Searching OpenStreetMap for: {PLACE}")
 
-boundary = ox.geocode_to_gdf(place)
+boundary = ox.geocode_to_gdf(PLACE)
+
+output_path = Path("data/raw/tamil_nadu_boundary.geojson")
+output_path.parent.mkdir(parents=True, exist_ok=True)
 
 boundary.to_file(
-    "data/raw/velachery_boundary.geojson",
+    output_path,
     driver="GeoJSON"
 )
 
-print("Boundary saved successfully.")
+print(f"Tamil Nadu boundary saved to: {output_path}")
 print(boundary)

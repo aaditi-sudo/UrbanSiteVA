@@ -6,81 +6,164 @@ from pathlib import Path
 from config import EE_PROJECT
 
 
-# Settings
+# ============================================================
+# SETTINGS
+# ============================================================
 
 START_DATE = "2025-01-01"
 END_DATE = "2025-12-31"
+
 CLOUD_THRESHOLD = 20
+
+# NDVI >= 0.30 is considered vegetation
 NDVI_VEGETATION_THRESHOLD = 0.30
-SCALE = 10
+
+# Larger study area = larger scale for faster processing
+SCALE = 100
 
 
-# Initialize Earth Engine
+# ============================================================
+# INITIALIZE GOOGLE EARTH ENGINE
+# ============================================================
+
+print("Initializing Google Earth Engine...")
 
 ee.Initialize(project=EE_PROJECT)
 
 
-# Load Velachery boundary
+# ============================================================
+# LOAD TAMIL NADU BOUNDARY
+# ============================================================
 
-boundary_path = Path("data/raw/velachery_boundary.geojson")
+print("Loading Tamil Nadu boundary...")
 
-with open(boundary_path, "r", encoding="utf-8") as file:
+boundary_path = Path(
+    "data/raw/tamil_nadu_boundary.geojson"
+)
+
+if not boundary_path.exists():
+    raise FileNotFoundError(
+        f"Tamil Nadu boundary not found: {boundary_path}"
+    )
+
+with open(
+    boundary_path,
+    "r",
+    encoding="utf-8"
+) as file:
     boundary_geojson = json.load(file)
+
 
 geometry = ee.Geometry(
     boundary_geojson["features"][0]["geometry"]
 )
 
-# Load Sentinel-2 imagery
+
+# ============================================================
+# LOAD SENTINEL-2 IMAGERY
+# ============================================================
 
 print("Loading Sentinel-2 imagery...")
 
 collection = (
-    ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
+    ee.ImageCollection(
+        "COPERNICUS/S2_SR_HARMONIZED"
+    )
     .filterBounds(geometry)
-    .filterDate(START_DATE, END_DATE)
-    .filter(ee.Filter.lt(
-        "CLOUDY_PIXEL_PERCENTAGE",
-        CLOUD_THRESHOLD
-    ))
+    .filterDate(
+        START_DATE,
+        END_DATE
+    )
+    .filter(
+        ee.Filter.lt(
+            "CLOUDY_PIXEL_PERCENTAGE",
+            CLOUD_THRESHOLD
+        )
+    )
 )
 
-image = collection.median().clip(geometry)
+image_count = collection.size().getInfo()
+
+print(
+    f"Sentinel-2 images available: {image_count}"
+)
+
+if image_count == 0:
+    raise RuntimeError(
+        "No Sentinel-2 imagery found for Tamil Nadu "
+        "with the current date and cloud filters."
+    )
 
 
-# Calculate NDVI
+# Use median composite to reduce cloud/noise effects
+image = (
+    collection
+    .median()
+    .clip(geometry)
+)
 
-ndvi = image.normalizedDifference(
-    ["B8", "B4"]
-).rename("ndvi")
+
+# ============================================================
+# CALCULATE NDVI
+# ============================================================
+
+print("Calculating NDVI...")
+
+ndvi = (
+    image
+    .normalizedDifference(
+        ["B8", "B4"]
+    )
+    .rename("ndvi")
+)
+
+
+# ============================================================
+# MEAN NDVI
+# ============================================================
 
 mean_ndvi = ndvi.reduceRegion(
     reducer=ee.Reducer.mean(),
     geometry=geometry,
     scale=SCALE,
-    maxPixels=1e9
+    maxPixels=1e10
 ).get("ndvi")
 
 
-# Create vegetation mask
+# ============================================================
+# CREATE VEGETATION MASK
+# ============================================================
 
-vegetation = ndvi.gte(
-    NDVI_VEGETATION_THRESHOLD
-).rename("vegetation")
-
-
-# Calculate total area
-
-
-total_area = ee.Image.pixelArea().reduceRegion(
-    reducer=ee.Reducer.sum(),
-    geometry=geometry,
-    scale=SCALE,
-    maxPixels=1e9
-).getNumber("area")
+vegetation = (
+    ndvi
+    .gte(NDVI_VEGETATION_THRESHOLD)
+    .rename("vegetation")
+)
 
 
-# Calculate vegetation area
+# ============================================================
+# TOTAL STUDY AREA
+# ============================================================
+
+print("Calculating Tamil Nadu area...")
+
+total_area = (
+    ee.Image.pixelArea()
+    .reduceRegion(
+        reducer=ee.Reducer.sum(),
+        geometry=geometry,
+        scale=SCALE,
+        maxPixels=1e10
+    )
+    .getNumber("area")
+)
+
+
+# ============================================================
+# VEGETATION AREA
+# ============================================================
+
+print("Calculating vegetation area...")
 
 vegetation_area = (
     ee.Image.pixelArea()
@@ -89,51 +172,84 @@ vegetation_area = (
         reducer=ee.Reducer.sum(),
         geometry=geometry,
         scale=SCALE,
-        maxPixels=1e9
+        maxPixels=1e10
     )
     .getNumber("area")
 )
 
 
-# Calculate green percentage
+# ============================================================
+# GREEN COVER PERCENTAGE
+# ============================================================
 
-green_percentage = vegetation_area.divide(
-    total_area
-).multiply(100)
+green_percentage = (
+    vegetation_area
+    .divide(total_area)
+    .multiply(100)
+)
 
 
-# Retrieve results
+# ============================================================
+# RETRIEVE RESULTS
+# ============================================================
+
+print("Retrieving NDVI results...")
 
 results = {
-    "area_name": "Velachery",
+    "area_name": "Tamil Nadu",
+
     "period": {
         "start": START_DATE,
         "end": END_DATE
     },
+
     "mean_ndvi": mean_ndvi.getInfo(),
-    "ndvi_vegetation_threshold": NDVI_VEGETATION_THRESHOLD,
-    "total_area_sq_m": total_area.getInfo(),
-    "vegetation_area_sq_m": vegetation_area.getInfo(),
-    "green_percentage": green_percentage.getInfo()
+
+    "ndvi_vegetation_threshold":
+        NDVI_VEGETATION_THRESHOLD,
+
+    "total_area_sq_m":
+        total_area.getInfo(),
+
+    "vegetation_area_sq_m":
+        vegetation_area.getInfo(),
+
+    "green_percentage":
+        green_percentage.getInfo()
 }
 
 
+# ============================================================
+# DISPLAY RESULTS
+# ============================================================
 
-# Display results
-
-print("\nNDVI AND GREEN COVER RESULTS")
-print("-" * 35)
+print("\n")
+print("=" * 50)
+print("TAMIL NADU NDVI AND GREEN COVER RESULTS")
+print("=" * 50)
 
 for key, value in results.items():
     print(f"{key}: {value}")
 
+print("=" * 50)
 
-# -----------------------------
-# Save summary
-# -----------------------------
 
-output_path = Path(
-    "data/processed/ndvi_summary.json"
+# ============================================================
+# SAVE SUMMARY
+# ============================================================
+
+processed_dir = Path(
+    "data/processed"
+)
+
+processed_dir.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+output_path = (
+    processed_dir /
+    "ndvi_summary.json"
 )
 
 with open(
@@ -141,6 +257,7 @@ with open(
     "w",
     encoding="utf-8"
 ) as file:
+
     json.dump(
         results,
         file,
@@ -148,28 +265,49 @@ with open(
     )
 
 print(
-    f"\nResults saved to: {output_path}"
+    f"\nNDVI summary saved to: {output_path}"
 )
 
 
-# Export spatial NDVI as GeoTIFF
+# ============================================================
+# EXPORT SPATIAL NDVI AS GEOTIFF
+# ============================================================
 
-print("\nDownloading NDVI GeoTIFF...")
+print("\nPreparing spatial NDVI GeoTIFF...")
 
 download_url = ndvi.getDownloadURL({
-    "name": "velachery_ndvi",
+    "name": "tamil_nadu_ndvi",
     "region": geometry,
     "scale": SCALE,
     "crs": "EPSG:4326",
     "format": "GEO_TIFF"
 })
 
-tif_path = Path("data/processed/ndvi.tif")
+tif_path = (
+    processed_dir /
+    "ndvi.tif"
+)
 
-response = requests.get(download_url)
+print("Downloading NDVI GeoTIFF...")
+
+response = requests.get(
+    download_url,
+    timeout=300
+)
+
 response.raise_for_status()
 
-with open(tif_path, "wb") as file:
-    file.write(response.content)
+with open(
+    tif_path,
+    "wb"
+) as file:
 
-print(f"Spatial NDVI saved to: {tif_path}")
+    file.write(
+        response.content
+    )
+
+print(
+    f"Spatial NDVI saved to: {tif_path}"
+)
+
+print("\nTamil Nadu NDVI processing completed successfully.")

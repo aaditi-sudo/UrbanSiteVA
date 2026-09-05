@@ -1,12 +1,12 @@
 {
-    "area_name": "Velachery",
+    "area_name": "Tamil Nadu",
     "period": {
         "start": "2025-01-01",
         "end": "2025-12-31"
     },
-    "mean_ndvi": 0.23429348051477472,
+    "mean_ndvi": 0.49520643637789913,
     "ndvi_vegetation_threshold": 0.3,
-    "total_area_sq_m": 5584464.7413829435,
-    "vegetation_area_sq_m": 1640049.7254193765,
-    "green_percentage": 29.368073779139532
+    "total_area_sq_m": 130070310332.35027,
+    "vegetation_area_sq_m": 115317982609.30199,
+    "green_percentage": 88.6581898010747
 }

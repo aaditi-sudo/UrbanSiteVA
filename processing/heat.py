@@ -6,30 +6,42 @@ from pathlib import Path
 from config import EE_PROJECT
 
 
-# -----------------------------
-# Settings
-# -----------------------------
+# ============================================================
+# SETTINGS
+# ============================================================
 
 START_DATE = "2025-01-01"
 END_DATE = "2025-12-31"
+
 CLOUD_THRESHOLD = 20
-SCALE = 30
+
+# 100 m is used because the study area is now Tamil Nadu
+SCALE = 100
 
 
-# -----------------------------
-# Initialize Earth Engine
-# -----------------------------
+# ============================================================
+# INITIALIZE EARTH ENGINE
+# ============================================================
+
+print("Initializing Google Earth Engine...")
 
 ee.Initialize(project=EE_PROJECT)
 
 
-# -----------------------------
-# Load Velachery boundary
-# -----------------------------
+# ============================================================
+# LOAD TAMIL NADU BOUNDARY
+# ============================================================
+
+print("Loading Tamil Nadu boundary...")
 
 boundary_path = Path(
-    "data/raw/velachery_boundary.geojson"
+    "data/raw/tamil_nadu_boundary.geojson"
 )
+
+if not boundary_path.exists():
+    raise FileNotFoundError(
+        f"Tamil Nadu boundary not found: {boundary_path}"
+    )
 
 with open(
     boundary_path,
@@ -43,16 +55,21 @@ geometry = ee.Geometry(
 )
 
 
-# -----------------------------
-# Load Landsat 8 imagery
-# -----------------------------
+# ============================================================
+# LOAD LANDSAT 8 THERMAL IMAGERY
+# ============================================================
 
 print("Loading Landsat thermal imagery...")
 
 landsat = (
-    ee.ImageCollection("LANDSAT/LC08/C02/T1_L2")
+    ee.ImageCollection(
+        "LANDSAT/LC08/C02/T1_L2"
+    )
     .filterBounds(geometry)
-    .filterDate(START_DATE, END_DATE)
+    .filterDate(
+        START_DATE,
+        END_DATE
+    )
     .filter(
         ee.Filter.lt(
             "CLOUD_COVER",
@@ -61,82 +78,127 @@ landsat = (
     )
 )
 
+image_count = landsat.size().getInfo()
 
-# -----------------------------
-# Create median composite
-# -----------------------------
+print(
+    f"Landsat images available: {image_count}"
+)
 
-image = landsat.median().clip(geometry)
+if image_count == 0:
+    raise RuntimeError(
+        "No Landsat thermal imagery found for Tamil Nadu "
+        "with the current filters."
+    )
 
 
-# -----------------------------
-# Convert thermal band to Celsius
-# -----------------------------
+# ============================================================
+# CREATE MEDIAN COMPOSITE
+# ============================================================
+
+print("Creating median thermal composite...")
+
+image = (
+    landsat
+    .median()
+    .clip(geometry)
+)
+
+
+# ============================================================
+# CONVERT THERMAL BAND TO CELSIUS
+# ============================================================
+
 # Landsat Collection 2 Level 2:
-# Surface temperature = ST_B10 * 0.00341802 + 149.0 Kelvin
+#
+# Surface temperature (Kelvin)
+# = ST_B10 * 0.00341802 + 149.0
+#
+# Then convert Kelvin → Celsius.
 
-lst_kelvin = image.select(
-    "ST_B10"
-).multiply(
-    0.00341802
-).add(
-    149.0
+print("Converting surface temperature to Celsius...")
+
+lst_kelvin = (
+    image
+    .select("ST_B10")
+    .multiply(0.00341802)
+    .add(149.0)
 )
 
-lst_celsius = lst_kelvin.subtract(
-    273.15
-).rename(
-    "lst_celsius"
-)
-
-
-# -----------------------------
-# Calculate mean temperature
-# -----------------------------
-
-mean_temperature = lst_celsius.reduceRegion(
-    reducer=ee.Reducer.mean(),
-    geometry=geometry,
-    scale=SCALE,
-    maxPixels=1e9
-).get(
-    "lst_celsius"
+lst_celsius = (
+    lst_kelvin
+    .subtract(273.15)
+    .rename("lst_celsius")
 )
 
 
-# -----------------------------
-# Get results
-# -----------------------------
+# ============================================================
+# CALCULATE MEAN SURFACE TEMPERATURE
+# ============================================================
+
+print("Calculating Tamil Nadu mean surface temperature...")
+
+mean_temperature = (
+    lst_celsius
+    .reduceRegion(
+        reducer=ee.Reducer.mean(),
+        geometry=geometry,
+        scale=SCALE,
+        maxPixels=1e10
+    )
+    .get("lst_celsius")
+)
+
+
+# ============================================================
+# GET RESULTS
+# ============================================================
+
+temperature_value = mean_temperature.getInfo()
 
 results = {
-    "area_name": "Velachery",
+    "area_name": "Tamil Nadu",
+
     "period": {
         "start": START_DATE,
         "end": END_DATE
     },
-    "mean_surface_temperature_celsius": (
-        mean_temperature.getInfo()
-    )
+
+    "mean_surface_temperature_celsius":
+        temperature_value
 }
 
 
-# -----------------------------
-# Display results
-# -----------------------------
+# ============================================================
+# DISPLAY RESULTS
+# ============================================================
 
-print("\nHEAT RESULTS")
-print("-" * 35)
+print("\n")
+print("=" * 50)
+print("TAMIL NADU SURFACE TEMPERATURE RESULTS")
+print("=" * 50)
 
 for key, value in results.items():
     print(f"{key}: {value}")
 
+print("=" * 50)
 
-# -----------------------------
-# Save summary
-# -----------------------------
 
-summary_path = Path(
-    "data/processed/heat_summary.json"
+# ============================================================
+# SAVE SUMMARY
+# ============================================================
+
+processed_dir = Path(
+    "data/processed"
+)
+
+processed_dir.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+summary_path = (
+    processed_dir /
+    "heat_summary.json"
 )
 
 with open(
@@ -144,6 +206,7 @@ with open(
     "w",
     encoding="utf-8"
 ) as file:
+
     json.dump(
         results,
         file,
@@ -151,30 +214,36 @@ with open(
     )
 
 print(
-    f"\nResults saved to: {summary_path}"
+    f"\nHeat summary saved to: {summary_path}"
 )
 
 
-# -----------------------------
-# Export spatial heat layer
-# -----------------------------
+# ============================================================
+# EXPORT SPATIAL HEAT LAYER
+# ============================================================
 
-print("\nDownloading heat GeoTIFF...")
+print("\nPreparing spatial temperature GeoTIFF...")
 
-download_url = lst_celsius.getDownloadURL({
-    "name": "velachery_heat",
-    "region": geometry,
-    "scale": SCALE,
-    "crs": "EPSG:4326",
-    "format": "GEO_TIFF"
-})
-
-tif_path = Path(
-    "data/processed/heat.tif"
+download_url = (
+    lst_celsius.getDownloadURL({
+        "name": "tamil_nadu_heat",
+        "region": geometry,
+        "scale": SCALE,
+        "crs": "EPSG:4326",
+        "format": "GEO_TIFF"
+    })
 )
+
+tif_path = (
+    processed_dir /
+    "heat.tif"
+)
+
+print("Downloading heat GeoTIFF...")
 
 response = requests.get(
-    download_url
+    download_url,
+    timeout=300
 )
 
 response.raise_for_status()
@@ -183,10 +252,15 @@ with open(
     tif_path,
     "wb"
 ) as file:
+
     file.write(
         response.content
     )
 
 print(
     f"Spatial heat layer saved to: {tif_path}"
+)
+
+print(
+    "\nTamil Nadu heat processing completed successfully."
 )

@@ -1,13 +1,13 @@
 {
-    "area_name": "Velachery",
+    "area_name": "Tamil Nadu",
     "period": {
         "start": "2025-01-01",
         "end": "2025-12-31"
     },
     "metric": "surface_urban_heat_island_intensity",
-    "site_mean_surface_temperature_celsius": 35.58195054519583,
-    "reference_mean_surface_temperature_celsius": 32.64398661047248,
+    "site_mean_surface_temperature_celsius": 37.49754919339666,
+    "reference_mean_surface_temperature_celsius": 28.059959557276578,
     "reference_search_buffer_meters": 5000,
     "reference_ndvi_threshold": 0.3,
-    "suhi_intensity_celsius": 2.9379639347233493
+    "suhi_intensity_celsius": 9.43758963612008
 }

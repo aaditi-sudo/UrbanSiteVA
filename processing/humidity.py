@@ -22,11 +22,11 @@ ee.Initialize(project=EE_PROJECT)
 
 
 # -----------------------------
-# Load study-area boundary
+# Load Tamil Nadu boundary
 # -----------------------------
 
 boundary_path = Path(
-    "data/raw/velachery_boundary.geojson"
+    "data/raw/tamil_nadu_boundary.geojson"
 )
 
 with open(
@@ -45,7 +45,7 @@ geometry = ee.Geometry(
 # Load ERA5-Land climate data
 # -----------------------------
 
-print("Loading ERA5-Land climate data...")
+print("Loading ERA5-Land climate data for Tamil Nadu...")
 
 era5 = (
     ee.ImageCollection(
@@ -62,8 +62,6 @@ era5 = (
 # -----------------------------
 # Calculate mean air temperature
 # -----------------------------
-# ERA5-Land temperature values are
-# in Kelvin, so convert to Celsius
 
 mean_temperature_kelvin = (
     era5
@@ -79,7 +77,7 @@ mean_temperature_celsius = (
 
 
 # -----------------------------
-# Calculate mean dew-point temperature
+# Calculate mean dew-point
 # -----------------------------
 
 mean_dewpoint_kelvin = (
@@ -98,15 +96,6 @@ mean_dewpoint_celsius = (
 # -----------------------------
 # Calculate relative humidity
 # -----------------------------
-#
-# RH = 100 × exp(
-#   (17.625 × Td) / (243.04 + Td)
-#   -
-#   (17.625 × T) / (243.04 + T)
-# )
-#
-# T  = air temperature in Celsius
-# Td = dew-point temperature in Celsius
 
 temperature_term = (
     mean_temperature_celsius
@@ -136,7 +125,7 @@ relative_humidity = (
 
 
 # -----------------------------
-# Calculate study-area mean
+# Calculate Tamil Nadu mean
 # -----------------------------
 
 mean_relative_humidity = (
@@ -145,7 +134,7 @@ mean_relative_humidity = (
         reducer=ee.Reducer.mean(),
         geometry=geometry,
         scale=SCALE,
-        maxPixels=1e9
+        maxPixels=1e10
     )
     .get("relative_humidity_percent")
 )
@@ -156,7 +145,7 @@ mean_relative_humidity = (
 # -----------------------------
 
 results = {
-    "area_name": "Velachery",
+    "area_name": "Tamil Nadu",
     "period": {
         "start": START_DATE,
         "end": END_DATE
@@ -172,8 +161,8 @@ results = {
 # Display results
 # -----------------------------
 
-print("\nHUMIDITY RESULTS")
-print("-" * 35)
+print("\nTAMIL NADU HUMIDITY RESULTS")
+print("-" * 40)
 
 for key, value in results.items():
     print(f"{key}: {value}")

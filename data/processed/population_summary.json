@@ -1,9 +1,11 @@
 {
-    "area_name": "Velachery",
-    "data_source": "worldpop_R2025A_2025_100m",
+    "area_name": "Tamil Nadu",
+    "data_source": "WorldPop",
     "data_year": 2025,
-    "resolution": "100m",
-    "total_population": 70077.44,
-    "area_km2": 5.5846,
-    "population_density_per_km2": 12548.36
+    "resolution": "1km",
+    "regions_processed": 7,
+    "total_regions": 7,
+    "total_population": 80814154.24000001,
+    "area_km2": 130070.7003,
+    "population_density_per_km2": 621.3094421234542
 }

@@ -1,7 +1,6 @@
-EE_PROJECT = "urbansiteva" #EE_PROJECT = the actual Google Earth Engine / Google Cloud Project ID
+EE_PROJECT = "urbansiteva"
 
 STUDY_AREA = {
-    "name": "Velachery",
-    "city": "Chennai",
+    "state": "Tamil Nadu",
     "country": "India"
 }

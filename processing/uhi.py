@@ -15,12 +15,7 @@ END_DATE = "2025-12-31"
 CLOUD_THRESHOLD = 20
 SCALE = 30
 
-# Distance around the study area in which
-# we search for a reference area
 REFERENCE_BUFFER_METERS = 5000
-
-# Pixels with NDVI >= 0.30 are considered
-# vegetated reference pixels
 REFERENCE_NDVI_THRESHOLD = 0.30
 
 
@@ -32,11 +27,11 @@ ee.Initialize(project=EE_PROJECT)
 
 
 # -----------------------------
-# Load study-area boundary
+# Load Tamil Nadu boundary
 # -----------------------------
 
 boundary_path = Path(
-    "data/raw/velachery_boundary.geojson"
+    "data/raw/tamil_nadu_boundary.geojson"
 )
 
 with open(
@@ -55,12 +50,10 @@ geometry = ee.Geometry(
 # Create reference search zone
 # -----------------------------
 
-# Create a 5 km surrounding area
 buffered_geometry = geometry.buffer(
     REFERENCE_BUFFER_METERS
 )
 
-# Remove the study area itself
 reference_search_geometry = (
     buffered_geometry.difference(
         geometry,
@@ -73,7 +66,7 @@ reference_search_geometry = (
 # Load Landsat 8 imagery
 # -----------------------------
 
-print("Loading Landsat imagery...")
+print("Loading Landsat imagery for Tamil Nadu...")
 
 landsat = (
     ee.ImageCollection(
@@ -105,9 +98,6 @@ image = landsat.median()
 # -----------------------------
 # Calculate land-surface temperature
 # -----------------------------
-# Landsat Collection 2 Level 2:
-# Surface temperature =
-# ST_B10 * 0.00341802 + 149.0 Kelvin
 
 lst_kelvin = (
     image
@@ -126,9 +116,6 @@ lst_celsius = (
 # -----------------------------
 # Calculate NDVI
 # -----------------------------
-# Landsat 8:
-# SR_B5 = Near Infrared
-# SR_B4 = Red
 
 ndvi = (
     image
@@ -151,7 +138,7 @@ vegetated_reference_mask = (
 
 
 # -----------------------------
-# Calculate study-area temperature
+# Calculate Tamil Nadu temperature
 # -----------------------------
 
 site_mean_temperature = (
@@ -160,7 +147,7 @@ site_mean_temperature = (
         reducer=ee.Reducer.mean(),
         geometry=geometry,
         scale=SCALE,
-        maxPixels=1e9
+        maxPixels=1e10
     )
     .get("lst_celsius")
 )
@@ -169,8 +156,6 @@ site_mean_temperature = (
 # -----------------------------
 # Calculate reference temperature
 # -----------------------------
-# Only vegetated pixels in the surrounding
-# reference search zone are used
 
 reference_mean_temperature = (
     lst_celsius
@@ -181,7 +166,7 @@ reference_mean_temperature = (
         reducer=ee.Reducer.mean(),
         geometry=reference_search_geometry,
         scale=SCALE,
-        maxPixels=1e9
+        maxPixels=1e10
     )
     .get("lst_celsius")
 )
@@ -208,7 +193,7 @@ suhi_intensity = (
 # -----------------------------
 
 results = {
-    "area_name": "Velachery",
+    "area_name": "Tamil Nadu",
     "period": {
         "start": START_DATE,
         "end": END_DATE
@@ -238,8 +223,8 @@ results = {
 # Display results
 # -----------------------------
 
-print("\nSURFACE URBAN HEAT ISLAND RESULTS")
-print("-" * 40)
+print("\nTAMIL NADU SURFACE URBAN HEAT ISLAND RESULTS")
+print("-" * 50)
 
 for key, value in results.items():
     print(f"{key}: {value}")
@@ -265,5 +250,5 @@ with open(
     )
 
 print(
-    f"\nResults saved to: {summary_path}"
+    f"\nSpatial UHI summary saved to: {summary_path}"
 )

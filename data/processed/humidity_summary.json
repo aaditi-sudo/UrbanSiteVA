@@ -1,9 +1,9 @@
 {
-    "area_name": "Velachery",
+    "area_name": "Tamil Nadu",
     "period": {
         "start": "2025-01-01",
         "end": "2025-12-31"
     },
     "metric": "mean_relative_humidity",
-    "mean_relative_humidity_percent": 72.0616283312385
+    "mean_relative_humidity_percent": 68.3655960058768
 }
