@@ -8,7 +8,7 @@ from models.green_cover import GreenCover
 from api.green_cover import green_cover_bp
 from models.carbon import CarbonData
 from api.carbon import carbon_bp
-
+from models.population import PopulationData
 app = Flask(__name__)
 
 # Database configuration

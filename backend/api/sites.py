@@ -10,7 +10,7 @@ from models.green_cover import GreenCover
 from models.carbon import CarbonData
 from recommendations.engine import generate_recommendations
 from analysis.simulation import simulate_site
-
+from models.population import PopulationData
 sites_bp = Blueprint("sites", __name__)
 
 
@@ -82,6 +82,10 @@ def get_site_summary(site_id):
         "carbon": [
             c.to_dict()
             for c in site.carbon_data
+        ],
+        "population": [
+            p.to_dict()
+            for p in site.population_data
         ]
     })
 @sites_bp.route("/api/sites/<int:site_id>/score", methods=["GET"])
@@ -169,6 +173,31 @@ def process_site_data(site_id):
     # Check that the site exists
     site = Site.query.get_or_404(site_id)
 
+    # --------------------------------------------------
+    # Current prototype restriction
+    # --------------------------------------------------
+    # The existing processed JSON files are for the
+    # Velachery prototype only.
+    #
+    # Do NOT attach these values to arbitrary sites.
+    # Tamil Nadu-wide/site-specific processing will be
+    # supported when the spatial processing pipeline
+    # is generalized.
+    # --------------------------------------------------
+
+    site_name = site.name.strip().lower()
+    site_location = site.location.strip().lower()
+
+    if "velachery" not in site_name and "velachery" not in site_location:
+        return jsonify({
+            "error": (
+                "Processed environmental data is currently "
+                "available only for the Velachery prototype site. "
+                "Site-specific Tamil Nadu processing is not "
+                "available for this location yet."
+            )
+        }), 400
+
     # Project root:
     # backend/api/sites.py
     #       ↓
@@ -177,54 +206,56 @@ def process_site_data(site_id):
     # project root
     project_root = Path(__file__).resolve().parents[2]
 
-    processed_dir = (
-        project_root
-        / "data"
-        / "processed"
-    )
+    processed_dir = project_root / "data" / "processed"
 
-    # -----------------------------
+    # --------------------------------------------------
     # Load processed JSON files
-    # -----------------------------
+    # --------------------------------------------------
 
-    with open(
-        processed_dir / "ndvi_summary.json",
-        "r",
-        encoding="utf-8"
-    ) as file:
-        ndvi_data = json.load(file)
+    try:
+        with open(
+            processed_dir / "ndvi_summary.json",
+            "r",
+            encoding="utf-8"
+        ) as file:
+            ndvi_data = json.load(file)
 
-    with open(
-        processed_dir / "heat_summary.json",
-        "r",
-        encoding="utf-8"
-    ) as file:
-        heat_data = json.load(file)
+        with open(
+            processed_dir / "heat_summary.json",
+            "r",
+            encoding="utf-8"
+        ) as file:
+            heat_data = json.load(file)
 
-    with open(
-        processed_dir / "uhi_summary.json",
-        "r",
-        encoding="utf-8"
-    ) as file:
-        uhi_data = json.load(file)
+        with open(
+            processed_dir / "uhi_summary.json",
+            "r",
+            encoding="utf-8"
+        ) as file:
+            uhi_data = json.load(file)
 
-    with open(
-        processed_dir / "humidity_summary.json",
-        "r",
-        encoding="utf-8"
-    ) as file:
-        humidity_data = json.load(file)
+        with open(
+            processed_dir / "humidity_summary.json",
+            "r",
+            encoding="utf-8"
+        ) as file:
+            humidity_data = json.load(file)
 
-    with open(
-        processed_dir / "carbon_summary.json",
-        "r",
-        encoding="utf-8"
-    ) as file:
-        carbon_data = json.load(file)
+        with open(
+            processed_dir / "carbon_summary.json",
+            "r",
+            encoding="utf-8"
+        ) as file:
+            carbon_data = json.load(file)
 
-    # -----------------------------
+    except FileNotFoundError as error:
+        return jsonify({
+            "error": f"Processed data file not found: {error.filename}"
+        }), 404
+
+    # --------------------------------------------------
     # Remove old data for this site
-    # -----------------------------
+    # --------------------------------------------------
 
     ClimateData.query.filter_by(
         site_id=site_id
@@ -238,26 +269,20 @@ def process_site_data(site_id):
         site_id=site_id
     ).delete()
 
-    # -----------------------------
+    # --------------------------------------------------
     # Create GreenCover record
-    # -----------------------------
+    # --------------------------------------------------
 
     green_cover = GreenCover(
         site_id=site_id,
-        green_percentage=ndvi_data[
-            "green_percentage"
-        ],
-        vegetation_area=ndvi_data[
-            "vegetation_area_sq_m"
-        ],
-        mean_ndvi=ndvi_data[
-            "mean_ndvi"
-        ]
+        green_percentage=ndvi_data["green_percentage"],
+        vegetation_area=ndvi_data["vegetation_area_sq_m"],
+        mean_ndvi=ndvi_data["mean_ndvi"]
     )
 
-    # -----------------------------
+    # --------------------------------------------------
     # Create ClimateData record
-    # -----------------------------
+    # --------------------------------------------------
 
     climate = ClimateData(
         site_id=site_id,
@@ -272,42 +297,30 @@ def process_site_data(site_id):
         ]
     )
 
-    # -----------------------------
+    # --------------------------------------------------
     # Create CarbonData record
-    # -----------------------------
+    # --------------------------------------------------
 
     carbon = CarbonData(
         site_id=site_id,
-        carbon_intensity=carbon_data[
-            "carbon_intensity"
-        ],
-        emission_source=carbon_data[
-            "emission_source"
-        ]
+        carbon_intensity=carbon_data["carbon_intensity"],
+        emission_source=carbon_data["emission_source"]
     )
 
-    # -----------------------------
+    # --------------------------------------------------
     # Save to database
-    # -----------------------------
+    # --------------------------------------------------
 
-    db.session.add(
-        green_cover
-    )
-
-    db.session.add(
-        climate
-    )
-
-    db.session.add(
-        carbon
-    )
+    db.session.add(green_cover)
+    db.session.add(climate)
+    db.session.add(carbon)
 
     db.session.commit()
 
     return jsonify({
         "message": (
-            "Processed data successfully "
-            "connected to site."
+            "Processed environmental data successfully "
+            "connected to the Velachery site."
         ),
         "site": site.to_dict(),
         "green_cover": green_cover.to_dict(),

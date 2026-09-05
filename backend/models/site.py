@@ -42,7 +42,11 @@ class Site(db.Model):
         backref="site",
         lazy=True
     )
-
+    population_data = db.relationship(
+        "PopulationData",
+        backref="site",
+        lazy=True
+    )
     def to_dict(self):
         return {
             "id": self.id,
