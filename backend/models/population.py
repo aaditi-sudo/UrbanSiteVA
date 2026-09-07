@@ -1,4 +1,4 @@
-from database import db
+from backend.database import db
 
 
 class PopulationData(db.Model):
@@ -10,7 +10,7 @@ class PopulationData(db.Model):
 
     site_id = db.Column(
         db.Integer,
-        db.ForeignKey("site.id"),
+        db.ForeignKey("sites.id"),
         nullable=False
     )
 
@@ -52,3 +52,6 @@ class PopulationData(db.Model):
             "data_year": self.data_year,
             "data_source": self.data_source
         }
+
+
+

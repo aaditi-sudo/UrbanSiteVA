@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-from database import db
-from models.green_cover import GreenCover
+from backend.database import db
+from backend.models.green_cover import GreenCover
 
 
 green_cover_bp = Blueprint("green_cover", __name__)
@@ -36,3 +36,5 @@ def add_green_cover():
         "message": "Green cover data added successfully",
         "green_cover": green_cover.to_dict()
     }), 201
+
+

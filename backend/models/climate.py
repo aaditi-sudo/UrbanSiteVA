@@ -1,4 +1,4 @@
-from database import db
+from backend.database import db
 
 
 class ClimateData(db.Model):
@@ -10,7 +10,7 @@ class ClimateData(db.Model):
 
     site_id = db.Column(
         db.Integer,
-        db.ForeignKey("site.id"),
+        db.ForeignKey("sites.id"),
         nullable=False
     )
 
@@ -38,3 +38,6 @@ class ClimateData(db.Model):
             "uhi_index": self.uhi_index,
             "humidity": self.humidity
         }
+
+
+

@@ -1,13 +1,18 @@
-from database import db
+from backend.database import db
 
 
 class Site(db.Model):
+    __tablename__ = "sites"
+
     id = db.Column(db.Integer, primary_key=True)
 
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(
+        db.String(200),
+        nullable=False
+    )
 
     location = db.Column(
-        db.String(100),
+        db.String(300),
         nullable=False
     )
 
@@ -23,24 +28,28 @@ class Site(db.Model):
 
     area = db.Column(
         db.Float,
-        nullable=False
-    )
-    climate_data = db.relationship(
-        "ClimateData",
-        backref="site",
-        lazy=True
+        nullable=True
     )
 
     green_cover = db.relationship(
         "GreenCover",
         backref="site",
-        lazy=True
+        lazy=True,
+        cascade="all, delete-orphan"
     )
 
-    carbon_data = db.relationship(
+    climate = db.relationship(
+        "ClimateData",
+        backref="site",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
+
+    carbon = db.relationship(
         "CarbonData",
         backref="site",
-        lazy=True
+        lazy=True,
+        cascade="all, delete-orphan"
     )
     population_data = db.relationship(
         "PopulationData",
@@ -56,3 +65,8 @@ class Site(db.Model):
             "longitude": self.longitude,
             "area": self.area
         }
+
+
+
+
+

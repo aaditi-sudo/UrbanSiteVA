@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-from database import db
-from models.carbon import CarbonData
+from backend.database import db
+from backend.models.carbon import CarbonData
 
 
 carbon_bp = Blueprint("carbon", __name__)
@@ -36,3 +36,5 @@ def add_carbon():
         "message": "Carbon data added successfully",
         "carbon": carbon.to_dict()
     }), 201
+
+

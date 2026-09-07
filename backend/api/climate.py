@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-from database import db
-from models.climate import ClimateData
+from backend.database import db
+from backend.models.climate import ClimateData
 
 
 climate_bp = Blueprint("climate", __name__)
@@ -37,3 +37,5 @@ def add_climate():
         "message": "Climate data added successfully",
         "climate": climate.to_dict()
     }), 201
+
+

@@ -1,4 +1,4 @@
-from analysis.score import calculate_score
+from backend.analysis.score import calculate_score
 
 
 class SimulatedClimate:
@@ -16,21 +16,52 @@ class SimulatedCarbon:
         self.carbon_intensity = carbon_intensity
 
 
-def simulate_site(climate, green_cover, carbon, new_green_percentage):
+def simulate_site(
+    climate,
+    green_cover,
+    carbon,
+    new_green_percentage
+):
+    new_green_percentage = float(new_green_percentage)
 
-    # Estimate that increasing green cover reduces UHI.
-    simulated_uhi = climate.uhi_index
+    # Keep value within valid range
+    new_green_percentage = max(
+        0,
+        min(100, new_green_percentage)
+    )
 
-    if new_green_percentage > green_cover.green_percentage:
-        improvement = new_green_percentage - green_cover.green_percentage
-        simulated_uhi = max(
-            0,
-            climate.uhi_index - (improvement * 0.1)
-        )
+    current_green = float(
+        green_cover.green_percentage
+    )
 
-    simulated_climate = SimulatedClimate(simulated_uhi)
-    simulated_green = SimulatedGreenCover(new_green_percentage)
-    simulated_carbon = SimulatedCarbon(carbon.carbon_intensity)
+    current_uhi = float(
+        climate.uhi_index
+    )
+
+    # Increasing green cover reduces UHI.
+    # Decreasing green cover increases UHI.
+    change = new_green_percentage - current_green
+
+    simulated_uhi = current_uhi - (
+        change * 0.10
+    )
+
+    simulated_uhi = max(
+        0,
+        simulated_uhi
+    )
+
+    simulated_climate = SimulatedClimate(
+        simulated_uhi
+    )
+
+    simulated_green = SimulatedGreenCover(
+        new_green_percentage
+    )
+
+    simulated_carbon = SimulatedCarbon(
+        carbon.carbon_intensity
+    )
 
     result = calculate_score(
         simulated_climate,
@@ -41,5 +72,8 @@ def simulate_site(climate, green_cover, carbon, new_green_percentage):
     return {
         "predicted_score": result["score"],
         "predicted_rating": result["rating"],
-        "predicted_uhi": round(simulated_uhi, 2)
+        "predicted_uhi": round(
+            simulated_uhi,
+            2
+        )
     }

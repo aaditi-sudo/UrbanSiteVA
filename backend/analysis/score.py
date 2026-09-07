@@ -42,3 +42,5 @@ def calculate_score(climate, green_cover, carbon):
         "score": score,
         "rating": rating
     }
+
+

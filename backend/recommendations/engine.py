@@ -27,3 +27,5 @@ def generate_recommendations(climate, green_cover, carbon):
         )
 
     return recommendations
+
+
